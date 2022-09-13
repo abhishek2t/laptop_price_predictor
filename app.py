@@ -1,59 +1,69 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
-import numpy as np
 import pickle
+import numpy as np
 
-pipe=pickle.load(open('pipe7.pkl','rb'))
-df=pickle.load(open('df.pkl','rb'))
-
-## now creating title
+# import the model
+pipe = pickle.load(open('pipe3.pkl','rb'))
+df = pickle.load(open('df3.pkl','rb'))
 
 st.title("Laptop Predictor")
 
-## brand
-company=st.selectbox('Brand',df['Company'].unique())
+# brand
+Company = st.selectbox('Brand',df['Company'].unique())
 
 # type of laptop
+TypeName = st.selectbox('Type',df['TypeName'].unique())
 
-type=st.selectbox('Type',df['TypeName'].unique())
+# Ram
+Ram = st.selectbox('RAM(in GB)',[2,4,6,8,12,16,24,32,64])
 
-## ram
+# weight
+weight = st.number_input('Weight of the Laptop')
 
-typeram=st.selectbox('RAM(in GB)',[2,4,6,8,12,16,24,32,64])
+# Touchscreen
+touchscreen = st.selectbox('Touchscreen',['No','Yes'])
 
-## weight
-weight=st.number_input('weight of the laptop')
+# IPS
+Ips = st.selectbox('IPS',['No','Yes'])
 
-## touchscreen
+# screen size
+screen_size = st.number_input('Screen Size')
 
-touchscreen=st.selectbox('Touchscreen',['Yes','No'])
-## ips
-IPS=st.selectbox('IPS',['Yes','No'])
+# resolution
+resolution = st.selectbox('Screen Resolution',['1920x1080','1366x768','1600x900','3840x2160','3200x1800','2880x1800','2560x1600','2560x1440','2304x1440'])
 
-##
-screen_size=st.number_input('screen_size')
+#cpu
+Cpu_brand = st.selectbox('CPU',df['Cpu_brand'].unique())
 
-resolution=st.selectbox('SCreen Resolution',['1920X1080','1366x768','1600x900','3840x2160','3200x1800','2880x1800','2560x1600','2560x1440','2304x1440'])
-## cpu
+HDD = st.selectbox('HDD(in GB)',[0,128,256,512,1024,2048])
 
-cpu=st.selectbox('brand',df['Cpu brand'].unique())
+SSD = st.selectbox('SSD(in GB)',[0,8,128,256,512,1024])
 
-## hdd
-hdd=st.selectbox('HDD in gb',[0,128,256,512,1024,2048])
+Gpu_brand = st.selectbox('GPU',df['Gpu_brand'].unique())
 
-## ssd
-ssd=st.selectbox('SSD in gb',[0,128,256,512,1024,2048])
+os = st.selectbox('OS',df['os'].unique())
 
-## gpu
-gpu=st.selectbox('Gpu',df['Gpu brand'].unique())
+if st.button('Predict Price'):
+    # query
+    ppi = None
+    if touchscreen == 'Yes':
+        touchscreen = 1
+    else:
+        touchscreen = 0
 
-# os
-os=st.selectbox('Gpu',df['os'].unique())
+    if Ips == 'Yes':
+        Ips = 1
+    else:
+        Ips = 0
 
-## now making the button
+    X_res = int(resolution.split('x')[0])
+    Y_res = int(resolution.split('x')[1])
+    ppi = ((X_res**2) + (Y_res**2))**0.5/screen_size
+    query = np.array([Company,TypeName,Ram,weight,touchscreen,Ips,ppi,Cpu_brand,HDD,SSD,Gpu_brand,os])
 
-if st.button('predict price'):
-    pass
-
+    query = query.reshape(1,12)
+    st.title("The predicted price of this configuration is " + str(int(np.exp(pipe.predict(query)[0]))))
 
 
 
